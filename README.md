@@ -92,7 +92,7 @@ Clone the repository and run `make run` using an existing `kube:admin` kube cont
 
 * Support Binding with backing services represented by Kubernetes resources including third-party CRD-backed resources.
 * Support binding with multiple-backing services.
-* Extract binding information based on annotations present in CRDs/CRs/resources. 
+* Extract binding information based on annotations present in CRDs/CRs/resources.
 * Extract binding values based on annotations present in OLM descriptors.
 * Project binding values as volume mounts.
 * Project binding values as environment variables.

@@ -319,7 +319,6 @@ Feature: Bind an application to a service
             metadata:
                 name: binding-request-a-d-c
             spec:
-                namePrefix: REDHAT
                 application:
                     name: nodejs-rest-http-crud-a-d-c
                     group: apps
@@ -331,7 +330,6 @@ Feature: Bind an application to a service
                     kind: Database
                     name: db-demo-a-d-c
                     id: postgresDB
-                    namePrefix: DEVTOOLS
                 mappings:
                     - name: SOME_KEY
                       value: 'SOME_VALUE:{{ .postgresDB.status.dbConnectionPort }}:{{ .postgresDB.status.dbName }}'
@@ -517,6 +515,7 @@ Feature: Bind an application to a service
         And jq ".status.conditions[] | select(.type=="Ready").status" of Service Binding "sbr-csv-attribute" should be changed to "True"
         And Secret "sbr-csv-secret-cm-descriptors" contains "BACKSERV_ENV_SVCNAME" key with value "demo-backserv-cr-1"
 
+    @etcd
     Scenario: Bind an imported Node.js application to Etcd database
         Given Etcd operator running
         * Etcd cluster "etcd-cluster-example" is running
@@ -528,6 +527,7 @@ Feature: Bind an application to a service
             metadata:
               name: binding-request-etcd
             spec:
+              namingStrategy: "ETCDCLUSTER_{{ .name | upper }}"
               application:
                 group: apps
                 version: v1

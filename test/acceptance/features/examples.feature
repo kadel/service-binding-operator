@@ -56,6 +56,7 @@ Feature: Verify examples provided in Service Binding Operator github repository
         And jq ".status.conditions[] | select(.type=="Ready").status" of Service Binding "sbr-to-bind-hello-app-to-route" should be changed to "True"
         And Secret "sbr-to-bind-hello-app-to-route" contains "ROUTE_HOST" key with value "example-sbo.apps.ci-ln-smyggvb-d5d6b.origin-ci-int-aws.dev.rhcloud.com"
 
+    @failing-case
     # https://github.com/redhat-developer/service-binding-operator/tree/master/examples/nodejs_postgresql_namespaces
     Scenario: Bind an application to a database running in another namespace
         Given Imported Nodejs application "nodejs-app-cross-ns-service" is running

@@ -78,6 +78,7 @@ Feature: Insert service binding to a custom location in application resource
         Then Service Binding "binding-request-csp" is ready
         And Secret "binding-request-csp" has been injected in to CR "demo-appconfig-csp" of kind "AppConfig" at path "{.spec.spec.containers[0].envFrom[0].secretRef.name}"
 
+    @name-pp
     Scenario: Specify secret's path in Service Binding
         Given DB "db-demo-ssp" is running
         * The Custom Resource is present

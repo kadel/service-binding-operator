@@ -45,7 +45,7 @@ var knativeServiceGVR = schema.GroupVersionResource{Group: "serving.knative.dev"
 
 // extraFieldsModifier is useful for updating backend service which requires additional changes besides
 // env/volumes updating. eg. for knative service we need to remove or update `spec.template.metadata.name`
-// from service template before updating otherwise it will be rejected.
+// from template naming before updating otherwise it will be rejected.
 type extraFieldsModifier interface {
 	ModifyExtraFields(u *unstructured.Unstructured) error
 }

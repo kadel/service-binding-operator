@@ -123,7 +123,9 @@ func (r *ServiceBindingReconciler) doReconcile(request reconcile.Request) (recon
 			sbr.GetNamespace(),
 			sbr.Spec.Services,
 			sbr.Spec.DetectBindingResources,
+			sbr.Spec.BindAsFiles,
 			r.restMapper,
+			sbr.Spec.NamingTemplate(),
 		)
 		if err != nil {
 			//handle service not found error
@@ -149,14 +151,13 @@ func (r *ServiceBindingReconciler) doReconcile(request reconcile.Request) (recon
 				}
 			}
 			return requeueError(err)
-
 		}
 	}
 	binding, err := buildBinding(
 		r.dynClient,
 		sbr.Spec.Mappings,
 		serviceCtxs,
-		sbr.Spec.NamePrefix,
+		sbr.Spec.NamingTemplate(),
 	)
 	if err != nil {
 		return requeueError(err)
