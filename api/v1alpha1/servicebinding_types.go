@@ -46,7 +46,7 @@ const (
 var templates = map[string]string{
 	"none":        "{{ .name }}",
 	"uppercase":   "{{ .service.kind | upper }}_{{ .name | upper }}",
-	"bindAsFiles": "{{ .name | lower }}",
+	"lowercase": "{{ .name | lower }}",
 }
 
 // ServiceBindingSpec defines the desired state of ServiceBinding
@@ -205,7 +205,7 @@ func (sbr ServiceBinding) AsOwnerReference() metav1.OwnerReference {
 
 func (spec *ServiceBindingSpec) NamingTemplate() string {
 	if spec.BindAsFiles && spec.NamingStrategy == "" {
-		return templates["none"]
+		return templates["lowercase"]
 	} else if spec.NamingStrategy == "" {
 		return templates["uppercase"]
 	} else if spec.NamingStrategy != "" {

@@ -34,23 +34,24 @@ func createServiceIndexPath(name string, gvk schema.GroupVersionKind) []string {
 }
 
 func buildServiceEnvVars(svcCtx *serviceContext, namingTemplate string) (map[string]string, error) {
-
 	bindingNames := map[string]string{}
+	svcCtx.namingStrategy = namingTemplate
+	data := map[string]interface{}{}
+
 	listEnvVars, err := envvars.Build(svcCtx.envVars, "")
 	if err != nil {
 		return nil, err
 	}
 
-	svcCtx.namingStrategy = namingTemplate
-
-	data := map[string]interface{}{}
 	if svcCtx.service == nil {
 		svcCtx.service = &unstructured.Unstructured{Object: data}
 	}
+
 	t, err := naming.NewNamingTemplate(namingTemplate, svcCtx.service.Object)
 	if err != nil {
 		return bindingNames, err
 	}
+
 	for k, v := range listEnvVars {
 		bindingName, err := t.GetBindingName(k)
 		if err != nil {
@@ -58,6 +59,7 @@ func buildServiceEnvVars(svcCtx *serviceContext, namingTemplate string) (map[str
 		}
 		bindingNames[bindingName] = v
 	}
+
 	return bindingNames, nil
 }
 

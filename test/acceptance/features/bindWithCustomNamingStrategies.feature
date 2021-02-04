@@ -39,14 +39,14 @@ Feature: Bind an application to a service using custom naming strategies
         And Secret "binding-request-naming-strategy" contains "DATABASE_DB_NAME" key with value "db-demo-naming-strategy"
         And Secret "binding-request-naming-strategy" contains "DATABASE_DB_PORT" key with value "5432"
         And Secret "binding-request-naming-strategy" contains "DATABASE_DB_USER" key with value "postgres"
-        And Secret "binding-request-naming-strategy" contains "DATABASE_DB_HOST" key with dynamic IP addess as the value
-        And Secret "binding-request-naming-strategy" contains "DATABASE_DBCONNECTIONIP" key with dynamic IP addess as the value
+        And Secret "binding-request-naming-strategy" contains "DATABASE_DB_HOST" key with dynamic IP address as the value
+        And Secret "binding-request-naming-strategy" contains "DATABASE_DBCONNECTIONIP" key with dynamic IP address as the value
         And Secret "binding-request-naming-strategy" contains "DATABASE_DBCONNECTIONPORT" key with value "5432"
 
 
-    @strategy-none
+    @disabled
     Scenario: Bind an imported Node.js application to PostgreSQL database in the following order: Application, DB and Service Binding and Naming Strategy none
-        Given Imported Nodejs application "nodejs-rest-http-crud-naming-none" is running
+        Given Imported Nodejs application "nodejs-crud-naming-none" is running
         * DB "db-demo-naming-none" is running
         When Service Binding is applied
             """
@@ -57,7 +57,7 @@ Feature: Bind an application to a service using custom naming strategies
             spec:
                 namingStrategy: none
                 application:
-                    name: nodejs-rest-http-crud-naming-none
+                    name: nodejs-crud-naming-none
                     group: apps
                     version: v1
                     resource: deployments
@@ -69,16 +69,14 @@ Feature: Bind an application to a service using custom naming strategies
             """
         Then Service Binding "binding-request-naming-none" is ready
         And application should be re-deployed
-        And Secret "binding-request-naming-none" contains "dbname" key with value "db-demo-naming-none"
+        And Secret "binding-request-naming-none" contains "dbName" key with value "db-demo-naming-none"
         And Secret "binding-request-naming-none" contains "user" key with value "postgres"
         And Secret "binding-request-naming-none" contains "password" key with value "password"
         And Secret "binding-request-naming-none" contains "db_password" key with value "password"
         And Secret "binding-request-naming-none" contains "db_name" key with value "db-demo-naming-none"
         And Secret "binding-request-naming-none" contains "db_port" key with value "5432"
         And Secret "binding-request-naming-none" contains "db_user" key with value "postgres"
-        And Secret "binding-request-naming-none" contains "db_host" key with dynamic IP addess as the value
-        And Secret "binding-request-naming-none" contains "dbConnectionIP" key with dynamic IP addess as the value
-        And Secret "binding-request-naming-none" contains "dbConnectionIP" key with value "5432"
+        And Secret "binding-request-naming-none" contains "dbConnectionPort" key with value "5432"
 
 
     Scenario: Bind an imported Node.js application to PostgreSQL database in the following order: Application, DB and Service Binding and custom Naming Strategy
@@ -112,23 +110,24 @@ Feature: Bind an application to a service using custom naming strategies
         And Secret "binding-request-naming-custom" contains "DB_DB_NAME_ENV" key with value "db-demo-naming-custom"
         And Secret "binding-request-naming-custom" contains "DB_DB_PORT_ENV" key with value "5432"
         And Secret "binding-request-naming-custom" contains "DB_DB_USER_ENV" key with value "postgres"
-        And Secret "binding-request-naming-custom" contains "DB_DB_HOST_ENV" key with dynamic IP addess as the value
-        And Secret "binding-request-naming-custom" contains "DB_DBCONNECTIONIP_ENV" key with dynamic IP addess as the value
+        And Secret "binding-request-naming-custom" contains "DB_DB_HOST_ENV" key with dynamic IP address as the value
+        And Secret "binding-request-naming-custom" contains "DB_DBCONNECTIONIP_ENV" key with dynamic IP address as the value
         And Secret "binding-request-naming-custom" contains "DB_DBCONNECTIONPORT_ENV" key with value "5432"
 
-    Scenario: Bind an imported Node.js application to PostgreSQL database in the following order: Application, DB and Service Binding and Naming Strategy for bind as a file
-        Given Imported Nodejs application "nodejs-rest-http-crud-naming-files" is running
+    Scenario: Bind an imported Node.js application to PostgreSQL database in the following order: Application, DB and Service Binding and Naming Strategy for bind as a file and custom naming
+        Given Imported Nodejs application "nodejs-naming-files-custom" is running
         * DB "db-demo-naming-files" is running
         When Service Binding is applied
             """
             apiVersion: operators.coreos.com/v1alpha1
             kind: ServiceBinding
             metadata:
-                name: binding-request-naming-files
+                name: binding-request-naming-files-custom
             spec:
                 bindAsFiles: true
+                namingStrategy: "DB_{{ .name | upper }}_ENV"
                 application:
-                    name: nodejs-rest-http-crud-naming-files
+                    name: nodejs-naming-files-custom
                     group: apps
                     version: v1
                     resource: deployments
@@ -136,17 +135,17 @@ Feature: Bind an application to a service using custom naming strategies
                 -   group: postgresql.baiju.dev
                     version: v1alpha1
                     kind: Database
-                    name: db-demo-naming-files
+                    name: db-demo-naming-files-custom
             """
-        Then Service Binding "binding-request-naming-files" is ready
+        Then Service Binding "binding-request-naming-files-custom" is ready
         And application should be re-deployed
-        And Secret "binding-request-naming-files" contains "dbName" key with value "db-demo-naming-files"
-        And Secret "binding-request-naming-files" contains "user" key with value "postgres"
-        And Secret "binding-request-naming-files" contains "password" key with value "password"
-        And Secret "binding-request-naming-files" contains "db_password" key with value "password"
-        And Secret "binding-request-naming-files" contains "db_name" key with value "db-demo-naming-files"
-        And Secret "binding-request-naming-files" contains "db_port" key with value "5432"
-        And Secret "binding-request-naming-files" contains "db_user" key with value "postgres"
-        And Secret "binding-request-naming-files" contains "db_host" key with dynamic IP addess as the value
-        And Secret "binding-request-naming-files" contains "dbConnectionIP" key with dynamic IP addess as the value
-        And Secret "binding-request-naming-files" contains "dbConnectionPort" key with value "5432"
+        And Secret "binding-request-naming-files-custom" contains "DB_DBNAME_ENV" key with value "db-demo-naming-custom"
+        And Secret "binding-request-naming-files-custom" contains "DB_USER_ENV" key with value "postgres"
+        And Secret "binding-request-naming-files-custom" contains "DB_PASSWORD_ENV" key with value "password"
+        And Secret "binding-request-naming-files-custom" contains "DB_DB_PASSWORD_ENV" key with value "password"
+        And Secret "binding-request-naming-files-custom" contains "DB_DB_NAME_ENV" key with value "db-demo-naming-custom"
+        And Secret "binding-request-naming-files-custom" contains "DB_DB_PORT_ENV" key with value "5432"
+        And Secret "binding-request-naming-files-custom" contains "DB_DB_USER_ENV" key with value "postgres"
+        And Secret "binding-request-naming-files-custom" contains "DB_DB_HOST_ENV" key with dynamic IP address as the value
+        And Secret "binding-request-naming-files-custom" contains "DB_DBCONNECTIONIP_ENV" key with dynamic IP address as the value
+        And Secret "binding-request-naming-files-custom" contains "DB_DBCONNECTIONPORT_ENV" key with value "5432"
