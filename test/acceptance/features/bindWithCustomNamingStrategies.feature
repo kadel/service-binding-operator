@@ -9,45 +9,56 @@ Feature: Bind an application to a service using custom naming strategies
         * Service Binding Operator is running
         * PostgreSQL DB operator is installed
 
-    Scenario: Bind an imported Node.js application to PostgreSQL database in the following order: Application, DB and Service Binding and Naming Strategy
-        Given Imported Nodejs application "nodejs-rest-http-crud-naming-strategy" is running
-        * DB "db-demo-naming-strategy" is running
+    Scenario: Bind an application to a service with no naming strategy
+        * OLM Operator "backend" is running
+        * The Custom Resource is present
+            """
+            apiVersion: stable.example.com/v1
+            kind: Backend
+            metadata:
+                name: backend-no-naming
+                annotations:
+                    service.binding/host_cross_ns_service: path={.spec.host_cross_ns_service}
+            spec:
+                host_cross_ns_service: cross.ns.service.stable.example.com
+            """
+        * Generic test application "myapp-no-naming" is running
         When Service Binding is applied
             """
             apiVersion: operators.coreos.com/v1alpha1
             kind: ServiceBinding
             metadata:
-                name: binding-request-naming-strategy
+                name: binding-request-no-naming
             spec:
                 application:
-                    name: nodejs-rest-http-crud-naming-strategy
+                    name: myapp-no-naming
                     group: apps
                     version: v1
                     resource: deployments
                 services:
-                -   group: postgresql.baiju.dev
-                    version: v1alpha1
-                    kind: Database
-                    name: db-demo-naming-strategy
+                -   group: stable.example.com
+                    version: v1
+                    kind: Backend
+                    name: backend-no-naming
             """
-        Then Service Binding "binding-request-naming-strategy" is ready
-        And application should be re-deployed
-        And Secret "binding-request-naming-strategy" contains "DATABASE_DBNAME" key with value "db-demo-naming-strategy"
-        And Secret "binding-request-naming-strategy" contains "DATABASE_USER" key with value "postgres"
-        And Secret "binding-request-naming-strategy" contains "DATABASE_PASSWORD" key with value "password"
-        And Secret "binding-request-naming-strategy" contains "DATABASE_DB_PASSWORD" key with value "password"
-        And Secret "binding-request-naming-strategy" contains "DATABASE_DB_NAME" key with value "db-demo-naming-strategy"
-        And Secret "binding-request-naming-strategy" contains "DATABASE_DB_PORT" key with value "5432"
-        And Secret "binding-request-naming-strategy" contains "DATABASE_DB_USER" key with value "postgres"
-        And Secret "binding-request-naming-strategy" contains "DATABASE_DB_HOST" key with dynamic IP address as the value
-        And Secret "binding-request-naming-strategy" contains "DATABASE_DBCONNECTIONIP" key with dynamic IP address as the value
-        And Secret "binding-request-naming-strategy" contains "DATABASE_DBCONNECTIONPORT" key with value "5432"
+        Then Service Binding "binding-request-no-naming" is ready
+        And The application env var "BACKEND_HOST_CROSS_NS_SERVICE" has value "cross.ns.service.stable.example.com"
 
 
-    @disabled
-    Scenario: Bind an imported Node.js application to PostgreSQL database in the following order: Application, DB and Service Binding and Naming Strategy none
-        Given Imported Nodejs application "nodejs-crud-naming-none" is running
-        * DB "db-demo-naming-none" is running
+    Scenario: Bind an application to a service with naming strategy none
+        * OLM Operator "backend" is running
+        * The Custom Resource is present
+            """
+            apiVersion: stable.example.com/v1
+            kind: Backend
+            metadata:
+                name: backend-naming-none
+                annotations:
+                    service.binding/host_cross_ns_service: path={.spec.host_cross_ns_service}
+            spec:
+                host_cross_ns_service: cross.ns.service.stable.example.com
+            """
+        * Generic test application "myapp-naming-none" is running
         When Service Binding is applied
             """
             apiVersion: operators.coreos.com/v1alpha1
@@ -57,95 +68,132 @@ Feature: Bind an application to a service using custom naming strategies
             spec:
                 namingStrategy: none
                 application:
-                    name: nodejs-crud-naming-none
+                    name: myapp-naming-none
                     group: apps
                     version: v1
                     resource: deployments
                 services:
-                -   group: postgresql.baiju.dev
-                    version: v1alpha1
-                    kind: Database
-                    name: db-demo-naming-none
+                -   group: stable.example.com
+                    version: v1
+                    kind: Backend
+                    name: backend-naming-none
             """
         Then Service Binding "binding-request-naming-none" is ready
-        And application should be re-deployed
-        And Secret "binding-request-naming-none" contains "dbName" key with value "db-demo-naming-none"
-        And Secret "binding-request-naming-none" contains "user" key with value "postgres"
-        And Secret "binding-request-naming-none" contains "password" key with value "password"
-        And Secret "binding-request-naming-none" contains "db_password" key with value "password"
-        And Secret "binding-request-naming-none" contains "db_name" key with value "db-demo-naming-none"
-        And Secret "binding-request-naming-none" contains "db_port" key with value "5432"
-        And Secret "binding-request-naming-none" contains "db_user" key with value "postgres"
-        And Secret "binding-request-naming-none" contains "dbConnectionPort" key with value "5432"
+        And The application env var "host_cross_ns_service" has value "cross.ns.service.stable.example.com"
 
-
-    Scenario: Bind an imported Node.js application to PostgreSQL database in the following order: Application, DB and Service Binding and custom Naming Strategy
-        Given Imported Nodejs application "nodejs-rest-http-crud-naming-custom" is running
-        * DB "db-demo-naming-custom" is running
+    Scenario: Bind an application to a service with custom naming strategy
+        * OLM Operator "backend" is running
+        * The Custom Resource is present
+            """
+            apiVersion: stable.example.com/v1
+            kind: Backend
+            metadata:
+                name: backend-custom-naming
+                annotations:
+                    service.binding/host_cross_ns_service: path={.spec.host_cross_ns_service}
+            spec:
+                host_cross_ns_service: cross.ns.service.stable.example.com
+            """
+        * Generic test application "myapp-custom-naming" is running
         When Service Binding is applied
             """
             apiVersion: operators.coreos.com/v1alpha1
             kind: ServiceBinding
             metadata:
-                name: binding-request-naming-custom
+                name: binding-request-custom-naming
             spec:
-                namingStrategy: "DB_{{ .name | upper }}_ENV"
+                namingStrategy: "PREFIX_{{ .service.kind | upper }}_{{ .name | upper }}_SUFFIX"
                 application:
-                    name: nodejs-rest-http-crud-naming-custom
+                    name: myapp-custom-naming
                     group: apps
                     version: v1
                     resource: deployments
                 services:
-                -   group: postgresql.baiju.dev
-                    version: v1alpha1
-                    kind: Database
-                    name: db-demo-naming-custom
+                -   group: stable.example.com
+                    version: v1
+                    kind: Backend
+                    name: backend-custom-naming
             """
-        Then Service Binding "binding-request-naming-custom" is ready
-        And application should be re-deployed
-        And Secret "binding-request-naming-custom" contains "DB_DBNAME_ENV" key with value "db-demo-naming-custom"
-        And Secret "binding-request-naming-custom" contains "DB_USER_ENV" key with value "postgres"
-        And Secret "binding-request-naming-custom" contains "DB_PASSWORD_ENV" key with value "password"
-        And Secret "binding-request-naming-custom" contains "DB_DB_PASSWORD_ENV" key with value "password"
-        And Secret "binding-request-naming-custom" contains "DB_DB_NAME_ENV" key with value "db-demo-naming-custom"
-        And Secret "binding-request-naming-custom" contains "DB_DB_PORT_ENV" key with value "5432"
-        And Secret "binding-request-naming-custom" contains "DB_DB_USER_ENV" key with value "postgres"
-        And Secret "binding-request-naming-custom" contains "DB_DB_HOST_ENV" key with dynamic IP address as the value
-        And Secret "binding-request-naming-custom" contains "DB_DBCONNECTIONIP_ENV" key with dynamic IP address as the value
-        And Secret "binding-request-naming-custom" contains "DB_DBCONNECTIONPORT_ENV" key with value "5432"
+        Then Service Binding "binding-request-custom-naming" is ready
+        And The application env var "PREFIX_BACKEND_HOST_CROSS_NS_SERVICE_SUFFIX" has value "cross.ns.service.stable.example.com"
 
-    Scenario: Bind an imported Node.js application to PostgreSQL database in the following order: Application, DB and Service Binding and Naming Strategy for bind as a file and custom naming
-        Given Imported Nodejs application "nodejs-naming-files-custom" is running
-        * DB "db-demo-naming-files" is running
+    Scenario: Bind an application to a service with bind as file and no naming strategy
+        * OLM Operator "backend" is running
+        * The Custom Resource is present
+            """
+            apiVersion: stable.example.com/v1
+            kind: Backend
+            metadata:
+                name: backend-bind-files
+                annotations:
+                    service.binding/host_cross_ns_service: path={.spec.host_cross_ns_service}
+            spec:
+                host_cross_ns_service: cross.ns.service.stable.example.com
+            """
+        * Generic test application "myapp-bind-files" is running
         When Service Binding is applied
             """
             apiVersion: operators.coreos.com/v1alpha1
             kind: ServiceBinding
             metadata:
-                name: binding-request-naming-files-custom
+                name: binding-request-bind-files
             spec:
                 bindAsFiles: true
-                namingStrategy: "DB_{{ .name | upper }}_ENV"
                 application:
-                    name: nodejs-naming-files-custom
+                    name: myapp-bind-files
                     group: apps
                     version: v1
                     resource: deployments
                 services:
-                -   group: postgresql.baiju.dev
-                    version: v1alpha1
-                    kind: Database
-                    name: db-demo-naming-files-custom
+                -   group: stable.example.com
+                    version: v1
+                    kind: Backend
+                    name: backend-bind-files
             """
-        Then Service Binding "binding-request-naming-files-custom" is ready
-        And application should be re-deployed
-        And Secret "binding-request-naming-files-custom" contains "DB_DBNAME_ENV" key with value "db-demo-naming-custom"
-        And Secret "binding-request-naming-files-custom" contains "DB_USER_ENV" key with value "postgres"
-        And Secret "binding-request-naming-files-custom" contains "DB_PASSWORD_ENV" key with value "password"
-        And Secret "binding-request-naming-files-custom" contains "DB_DB_PASSWORD_ENV" key with value "password"
-        And Secret "binding-request-naming-files-custom" contains "DB_DB_NAME_ENV" key with value "db-demo-naming-custom"
-        And Secret "binding-request-naming-files-custom" contains "DB_DB_PORT_ENV" key with value "5432"
-        And Secret "binding-request-naming-files-custom" contains "DB_DB_USER_ENV" key with value "postgres"
-        And Secret "binding-request-naming-files-custom" contains "DB_DB_HOST_ENV" key with dynamic IP address as the value
-        And Secret "binding-request-naming-files-custom" contains "DB_DBCONNECTIONIP_ENV" key with dynamic IP address as the value
-        And Secret "binding-request-naming-files-custom" contains "DB_DBCONNECTIONPORT_ENV" key with value "5432"
+        Then Service Binding "binding-request-bind-files" is ready
+        And The env var "host_cross_ns_service" is not available to the application
+        And Content of file "/bindings/binding-request-bind-files/host_cross_ns_service" in application pod is
+            """
+            cross.ns.service.stable.example.com
+            """
+
+    Scenario: Bind an application to a service with bind files and custom naming strategy
+        * OLM Operator "backend" is running
+        * The Custom Resource is present
+            """
+            apiVersion: stable.example.com/v1
+            kind: Backend
+            metadata:
+                name: backend-custom-file-naming
+                annotations:
+                    service.binding/host_cross_ns_service: path={.spec.host_cross_ns_service}
+            spec:
+                host_cross_ns_service: cross.ns.service.stable.example.com
+            """
+        * Generic test application "myapp-custom-file-naming" is running
+        When Service Binding is applied
+            """
+            apiVersion: operators.coreos.com/v1alpha1
+            kind: ServiceBinding
+            metadata:
+                name: binding-request-custom-file-naming
+            spec:
+                namingStrategy: "PREFIX_{{ .service.kind | upper }}_{{ .name | upper }}_SUFFIX"
+                mountPath: "/foo/bar"
+                bindAsFiles: true
+                application:
+                    name: myapp-custom-file-naming
+                    group: apps
+                    version: v1
+                    resource: deployments
+                services:
+                -   group: stable.example.com
+                    version: v1
+                    kind: Backend
+                    name: backend-custom-file-naming
+            """
+        Then Service Binding "binding-request-custom-file-naming" is ready
+        And Content of file "/foo/bar/PREFIX_BACKEND_HOST_CROSS_NS_SERVICE_SUFFIX" in application pod is
+            """
+            cross.ns.service.stable.example.com
+            """

@@ -44,8 +44,8 @@ const (
 )
 
 var templates = map[string]string{
-	"none":        "{{ .name }}",
-	"uppercase":   "{{ .service.kind | upper }}_{{ .name | upper }}",
+	"none":      "{{ .name }}",
+	"uppercase": "{{ .service.kind | upper }}_{{ .name | upper }}",
 	"lowercase": "{{ .name | lower }}",
 }
 
